@@ -2,6 +2,9 @@ import numpy as np
 import random
 from collections import defaultdict
 
+from numpy import array, append, reshape
+
+
 def crear_tablero(dimension):
 
     tablero = np.zeros((dimension, dimension), dtype=int)
@@ -62,8 +65,34 @@ def borrar_color(color, dimension, tablero):
                 tablero[0][i][j] = 0
     return tablero
 
+def backtracking_coordenadas(dimension, tablero, x, y, mov_color1):
+    #Aqui se puede recibir un contador de la cantidad de movimientos que existen
+    #para un color dado
+    i = 0
+    pos = 0
+    entro = False
+    for j in range(0, dimension +2):
+            if mov_color1[i,j] == x and mov_color1[i+1,j] == y:
+                print("Movimiento ya existe, vamos a borrar movimientos posteriores")
+                pos = j
+                entro = True
+                print(f"Pos hallada: {pos}")
+    if entro:
+        for j in range(pos+1, (dimension +2)):
+            tabx = mov_color1[i , j]
+            taby = mov_color1[i+1 ,j]
+            mov_color1[i , j] = 0
+            mov_color1[i + 1, j] = 0
+            tablero[0][tabx,taby] = 0
 
-def moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, turno,  listaCompletados):
+    print(mov_color1)
+    return pos
+
+
+def moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, turno,  listaCompletados,  mov_color1):
+
+    valx = 0
+    valy = 0
 
     color = tablero[0][x,y]
     print(listaCompletados)
@@ -77,21 +106,37 @@ def moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, t
     else:
         origen = False
 
+  ##------------------ ESTO NO VALIDA QUE EL COLOR PUEDA BORRARSE INCLUSO CUANDO NO SE HA COMPLETADO UN COLOR-----####
     if origen == True and color in listaCompletados:
         print("Entre a borrar color")
         borrar_color(color, dimension, tablero)
+        #CUANDO BORRO COLOR DEBO ADEMAS CONSIDERAR REINICIAR LA MATRIZ DE MOVIMIENTOS
+        # DE ESE COLOR
         listaCompletados.remove(color)
         print(tablero[0])
         print(listaCompletados)
         return -1
 
+    #Backtracking
+    if color in listaCompletados:
+        valy = backtracking_coordenadas(dimension, tablero, x, y, mov_color1)
+        listaCompletados.remove(color)
+        return -1
+    else:
+        valy = backtracking_coordenadas(dimension, tablero, x, y, mov_color1)
+
     if direccion == 'arriba':
 
         for i in range(1,casillas+1):
+            valy = valy + 1
+            print(valy)
 
             valido = validar_movimiento(dimension, tablero, x-i, y, color, i)
             if valido == True:
 
+                mov_color1[valx, valy-1] = x-i
+                mov_color1[valx+1, valy-1] = y
+                print(mov_color1)
                 tablero[0][x-i,y] = color
                 if origen == True and i==1:
                     pass
@@ -115,10 +160,14 @@ def moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, t
 
         for i in range(1,casillas+1):
 
+            valy = valy + 1
             valido = validar_movimiento(dimension, tablero, x + i, y, color, i)
 
             if valido == True:
 
+                mov_color1[valx, valy - 1] = x + i
+                mov_color1[valx + 1, valy - 1] = y
+                print(mov_color1)
                 tablero[0][x+i,y] = color
                 if origen == True and i==1: #ESTO NO VALIDA LA POSIBILIDAD DE QUE EL COLOR ESTE A 1 MOVIMIENTO DE COMPLETARSE DESDE EL PRIMER MOV
                     pass
@@ -141,11 +190,14 @@ def moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, t
     elif direccion == 'izquierda':
         for i in range(1,casillas+1):
 
+            valy = valy + 1
             valido = validar_movimiento(dimension, tablero, x , y-i, color, i)
-            print(tablero[0])
 
             if valido == True:
 
+                mov_color1[valx, valy - 1] = x
+                mov_color1[valx + 1, valy - 1] = y - i
+                print(mov_color1)
                 tablero[0][x,y-i] = color
                 if origen == True and i == 1:
                     pass
@@ -168,11 +220,14 @@ def moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, t
 
         for i in range(1,casillas+1):
 
+            valy = valy + 1
             valido = validar_movimiento(dimension, tablero, x, y + i, color, i)
-            print(tablero[0])
 
             if valido == True:
 
+                mov_color1[valx, valy - 1] = x
+                mov_color1[valx + 1, valy - 1] = y + i
+                print(mov_color1)
                 tablero[0][x, y + i] = color
                 if origen == True and i == 1:
                     pass
@@ -353,6 +408,11 @@ if __name__ == '__main__':
         coloresCompletados = 0
         contarcompletados = 0
 
+        #Creacion de matrices para guardar movimientos
+        mov_color1 = np.zeros((2, dimension+2), dtype=int)
+        mov_color1 = reshape(mov_color1,(2,dimension+2))
+        print(mov_color1)
+
         while Ganar == False:
 
             turno+=1
@@ -362,8 +422,9 @@ if __name__ == '__main__':
             casillas = validar_casillas(tablero, dimension)
             direccion = validar_direccion(direccionesPosibles)
 
-            contarcompletados += moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, turno, listaCompletados)
+            contarcompletados += moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, turno, listaCompletados, mov_color1)
             print(f"COLORES COMPLETADOS: {contarcompletados}")
+            print(tablero[0])
 
             if (contarcompletados == 4 and dimension<7) or (contarcompletados == 5 and dimension>=7):
                 Ganar = ganar(turno)
