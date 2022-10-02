@@ -1,5 +1,3 @@
-import pprint
-
 import numpy as np
 import random
 from collections import defaultdict
@@ -42,15 +40,14 @@ def crear_tablero(dimension):
 def es_origen(color, dimension, tablero, x, y):
 
     origenes = tablero[1]
-    #print(f"Color en origen {color}")
+
     if (x >= dimension or x < 0) or (y >= dimension or y < 0):
         pass
     else:
         if (x == origenes[color][0] and y == origenes[color][1]) or (x == origenes[color][2] and y == origenes[color][3]):
-            #print("--Es origen--")
             return True
+
         else:
-            #print("--No es origen--")
             return False
 
 def borrar_color(color, dimension, tablero):
@@ -62,11 +59,8 @@ def borrar_color(color, dimension, tablero):
     return tablero
 
 def backtracking_coordenadas(color, dimension, tablero, x, y, mov_color1, mov_color2, mov_color3, mov_color4):
-    #Aqui se puede recibir un contador de la cantidad de movimientos que existen
-    #para un color dado
     i = 0
     pos = 0
-
 
     for j in range(0, dimension*3):
 
@@ -74,14 +68,12 @@ def backtracking_coordenadas(color, dimension, tablero, x, y, mov_color1, mov_co
             if mov_color1[i,j] == x and mov_color1[i+1,j] == y:
                 print("Movimiento ya existe, vamos a borrar movimientos posteriores")
                 pos = j
-                #print(f"Pos hallada: {pos}")
                 for c in range(pos + 1, (dimension * 3)):
                     tabx = mov_color1[i, c]
                     taby = mov_color1[i + 1, c]
                     mov_color1[i, c] = -1
                     mov_color1[i + 1, c] = -1
                     tablero[0][tabx, taby] = 0
-                print(f"Lista de movimientos del color {color}")
                 print(mov_color1)
                 break
 
@@ -89,7 +81,6 @@ def backtracking_coordenadas(color, dimension, tablero, x, y, mov_color1, mov_co
             if mov_color2[i, j] == x and mov_color2[i + 1, j] == y:
                 print("Movimiento ya existe, vamos a borrar movimientos posteriores")
                 pos = j
-                #print(f"Pos hallada: {pos}")
                 for c in range(pos + 1, (dimension * 3)):
                     tabx = mov_color2[i, c]
                     taby = mov_color2[i + 1, c]
@@ -104,7 +95,6 @@ def backtracking_coordenadas(color, dimension, tablero, x, y, mov_color1, mov_co
             if mov_color3[i, j] == x and mov_color3[i + 1, j] == y:
                 print("Movimiento ya existe, vamos a borrar movimientos posteriores")
                 pos = j
-                #print(f"Pos hallada: {pos}")
                 for c in range(pos + 1, (dimension * 3)):
                     tabx = mov_color3[i, c]
                     taby = mov_color3[i + 1, c]
@@ -120,8 +110,6 @@ def backtracking_coordenadas(color, dimension, tablero, x, y, mov_color1, mov_co
             if mov_color4[i, j] == x and mov_color4[i + 1, j] == y:
                 print("Movimiento ya existe, vamos a borrar movimientos posteriores")
                 pos = j
-                #print(f"Pos hallada: {pos}")
-
                 for c in range(pos + 1, (dimension * 3)):
                     tabx = mov_color4[i, c]
                     taby = mov_color4[i + 1, c]
@@ -158,12 +146,12 @@ def borrar_lista_movimientos(dimension, tablero, color,mov_color1, mov_color2, m
             mov_color4[i, j] = -1
             mov_color4[i + 1, j] = -1
 
-def moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, turno,  listaCompletados,  mov_color1, mov_color2, mov_color3, mov_color4):
+def moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, listaCompletados,  mov_color1, mov_color2, mov_color3, mov_color4):
 
     valx = 0
     valy = 0
     color = tablero[0][x,y]
-    print(listaCompletados)
+    print(f"Lista de colores completados: {listaCompletados}")
 
     if color == 0:
         print("No se puede iniciar un movimiento desde una celda vacia\n")
@@ -175,7 +163,6 @@ def moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, t
     else:
         origen = False
 
-  ##------------------ ESTO NO VALIDA QUE EL COLOR PUEDA BORRARSE INCLUSO CUANDO NO SE HA COMPLETADO UN COLOR-----####
     if origen == True and color in listaCompletados:
         print("Entre a borrar color")
         borrar_color(color, dimension, tablero)
@@ -520,13 +507,6 @@ def ganar(turno):
 
     return True
 
-#--------------------------------------------------------------------------------------------------------
-#SI LA PERSONA VUELVE A ELEGIR ORIGEN DE UN COLOR, SE RESETEA TODA LA LINEA Y SI ESA LINEA YA ESTABA
-#COMPLETADA ENTONCES SE HACE -1 AL CONTADOR DE COLORES CONECTADOS
-#VALIDAR QUE LUEGO DE CONECTAR UN COLOR, NO PUEDA SEGUIR DIBUJANDO EN DADO CASO QUE ME DEN UNA LINEA QUE SOBREPASA EL COLOR
-#--------------------------------------------------------------------------------------------------------
-#--------------------------------------------------------------------------------------------------------
-
 def validar_dimensiones():
 
     while True:
@@ -544,7 +524,7 @@ def validar_dimensiones():
 
     return dimension
 
-def validar_coordenadas(dimension, turno, tablero):
+def validar_coordenadas(dimension, turno):
 
     while True:
         try:
@@ -610,7 +590,6 @@ if __name__ == '__main__':
         dimension = validar_dimensiones()
         tablero = crear_tablero(dimension)
         print(tablero[0])
-        #print(tablero[1])
         listaCompletados = []
         coloresCompletados = 0
         contarcompletados = 0
@@ -632,14 +611,14 @@ if __name__ == '__main__':
         while Ganar == False:
 
             turno+=1
-            coordenadas = validar_coordenadas(dimension, turno, tablero)
+            coordenadas = validar_coordenadas(dimension, turno)
             x = coordenadas[0]
             y = coordenadas[1]
             casillas = validar_casillas(tablero, dimension)
             direccion = validar_direccion(direccionesPosibles)
 
-            contarcompletados += moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, turno, listaCompletados, mov_color1, mov_color2, mov_color3, mov_color4)
-            print(f"COLORES COMPLETADOS: {contarcompletados}")
+            contarcompletados += moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, listaCompletados, mov_color1, mov_color2, mov_color3, mov_color4)
+            print(f" Cantidad de colores completados: {contarcompletados}")
             print(tablero[0])
 
             if (contarcompletados == 4):
