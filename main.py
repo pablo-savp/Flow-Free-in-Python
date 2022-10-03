@@ -9,15 +9,38 @@ def crear_tablero(dimension):
     tablero = np.zeros((dimension, dimension), dtype=int)
     color = 1
     listaOrigenes = []
+    positionCheck = []
     colores = 9
 
     for i in range(1, colores):
         posicionVacia = True
         while posicionVacia:
             x = random.randint(0, dimension-1)
-            y = random.randint(0, dimension-1)
+            if i % 2 == 0:
+                if dimension > 5:
+                    while True:
+                        if x == positionCheck[0] or x + 1 == positionCheck[0] or x + 2 == positionCheck[0] or x - 1 == positionCheck[0] or x - 2 == positionCheck[0]:
+                            x = random.randint(0, dimension - 1)
+                            y = random.randint(0, dimension - 1)
+                        else:
+                            break
+                else:
+                    while True:
+                        if x == positionCheck[0] or x + 1 == positionCheck[0] or x-1 == positionCheck[0]:
+                            x = random.randint(0, dimension - 1)
+                            y = random.randint(0, dimension - 1)
+                            if (y + 1 != positionCheck[1] or y - 1 != positionCheck[1]) and y != positionCheck[1] and x!=positionCheck[0]:
+                                y = y + 2
+                                break
+                        else:
+                            break
+
+            else:
+                y = random.randint(0, dimension - 1)
 
             if tablero[x, y] == 0:
+                positionCheck.append(x)
+                positionCheck.append(y)
                 listaOrigenes.append(x)
                 listaOrigenes.append(y)
                 tablero[x, y] = color
@@ -26,6 +49,7 @@ def crear_tablero(dimension):
 
         if i % 2 == 0:
             color+=1
+            positionCheck = []
 
     origenes = defaultdict(list)
     recorrer= 0
@@ -164,12 +188,13 @@ def moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, l
         origen = False
 
     if origen == True and color in listaCompletados:
-        print("Entre a borrar color")
+
         borrar_color(color, dimension, tablero)
         borrar_lista_movimientos(dimension, tablero, color, mov_color1, mov_color2, mov_color3, mov_color4)
         listaCompletados.remove(color)
         print(tablero[0])
-        print(listaCompletados)
+        print(f"--Color {color} borrado. Los movimientos estipulados de {casillas} casillas no contarán--")
+        print(f"Colores completados luego de borrado: {listaCompletados}")
         return -1
 
     #Backtracking
@@ -298,8 +323,7 @@ def moverse(coloresCompletados, dimension, tablero, x, y, casillas, direccion, l
 
                 tablero[0][x+i,y] = color
 
-                if origen == True and i==1: #RECORDAR QUE ESTO NO VALIDA QUE EN UN SOLO MOVIMIENTO A PARTIR DEL ORIGEN PUEDO CONECTAR UN COLOR
-                                           #LA SOLUCION SERIA CREAR EL TABLERO DE MANERA QUE LA DISTANCIA ENTRE COLORES SIEMPRE SEA MAYOR A 1
+                if origen == True and i==1:
                     pass
                 else:
                     coloresCompletados = color_conectado(dimension, color, x+i, y , tablero)
@@ -463,8 +487,6 @@ def validar_movimiento(dimension, tablero, x, y, color, movimiento):
 
 def color_conectado(dimension, color, x, y, tablero):
 
-    print("COLOR ACTUAL")
-    print(color)
 
     if es_origen(color, dimension, tablero, x-1, y):
         if x-1 < 0:
@@ -511,13 +533,12 @@ def validar_dimensiones():
 
     while True:
         try:
-            dimension = input("Ingresar la dimension del tablero deseado para jugar (5x5, 6x6, 7x7, 8x8, 9x9, 10x10): ")
+            dimension = input("Ingresar la dimension del tablero deseado para jugar (5x5, 6x6, 7x7, 8x8, 9x9, 10x10, 11x11, 12x12, 13x13, 14x14): ")
             dimension = int(dimension)
         except:
             print("Por favor ingresar digitos y no letras, el digito debe indicar la dimension deseada para jugar\n")
         else:
-            if isinstance(dimension, int) and dimension > 0:
-                print("entre")
+            if isinstance(dimension, int) and dimension > 0 and dimension<=14:
                 return dimension
             else:
                 print("Por favor ingresar dimensiones posibles, el digito debe indicar la dimension deseada para jugar\n")
@@ -597,7 +618,6 @@ if __name__ == '__main__':
         #Creacion de matrices para guardar movimientos
         mov_color1 = np.zeros((2, dimension*3), dtype=int)
         mov_color1 = reshape(mov_color1,(2,dimension*3))
-        print(mov_color1)
 
         mov_color2 = np.zeros((2, dimension*3), dtype=int)
         mov_color2 = reshape(mov_color2, (2, dimension*3))
@@ -623,8 +643,3 @@ if __name__ == '__main__':
 
             if (contarcompletados == 4):
                 Ganar = ganar(turno)
-
-
-
-
-
