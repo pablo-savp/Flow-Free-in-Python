@@ -1,6 +1,5 @@
 # Manual de Compilación
 Requisitos:
-
 -Interprete de Python 3.8+
 
 Compilación:
